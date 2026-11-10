@@ -1,0 +1,62 @@
+{
+  "status": "passed",
+  "first_resumed_step_gaps": {
+    "x": 0.0,
+    "f": 7.748603820800781e-07,
+    "bias": 1.214306433183765e-17
+  },
+  "positions_gap_at_1ps_after_restart_A": {
+    "resumed": 4.482269287109375e-05,
+    "without_rng": 2.7333450317382812
+  },
+  "final_positions_gap_A": {
+    "resumed_vs_straight": 0.0201416015625,
+    "repeat_vs_straight": 2.274350166320801
+  },
+  "kernel_updates_after_checkpoint": 200,
+  "batch_isolation": {
+    "first_system_bias_force_gap_when_other_changes": 0.0
+  },
+  "interpretation": "Endpoint drift is reported, not a bitwise GPU trajectory gate; no FES convergence claim.",
+  "case": {
+    "molecule": "trans-butane",
+    "model": "7net-omni",
+    "modal": "omol25_low",
+    "temperature_K": 300.0,
+    "dt_fs": 0.5,
+    "friction_time_ps": 0.1,
+    "pace": 100,
+    "sigma_min_rad": 0.1,
+    "barrier_kJ_mol": 10.0,
+    "checkpoint_step": 20000,
+    "end_step": 40000,
+    "negative_control_steps": 2000,
+    "batch_steps": 2000,
+    "smoke_steps": 500,
+    "seed": 7,
+    "gpu_wall_limit_s": 10800,
+    "first_step_limits": {
+      "positions_A": 1e-05,
+      "forces_eV_A": 0.0001,
+      "bias_eV": 1e-05
+    },
+    "scope": "v0.1 software validation only; no research structures or FES convergence claim"
+  },
+  "environment": {
+    "torch": "2.12.1+cu130",
+    "torch-sim-atomistic": "0.6.0",
+    "sevenn": "0.13.0",
+    "ase": "3.29.0"
+  },
+  "hardware": "NVIDIA RTX PRO 5000 Blackwell",
+  "kernel_version": "2.9.2",
+  "python_binding_version": "2.9.2",
+  "recorded_date": "2026-11-07",
+  "gpu_elapsed_s": 5357,
+  "executed_source_sha256": {
+    "harness": "718d79e234dd902c4bbaac087d1d54d0c2feb2112e8c50a3a3279c0cb1b7f582",
+    "core": "8e352608594e3ca7c008cfe4057fd5d1f441e99c9c54b69eeea206b738b42c4a",
+    "config": "a7c412674d4aa614102aba45ef0e283a5810d66ca35335e5f6f4b1ded4ce4ea6"
+  },
+  "reproduction": "Install the sevennet optional dependencies and an OPES-enabled PLUMED kernel, then run python benchmarks/validate_butane.py --out butane_validation. Compared with the executed copy, the packaged harness differs in the import path, the config file name, the module docstring and two error messages."
+}

@@ -1,0 +1,9 @@
+name: plumed-bias-ci
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.12
+  - pip
+  - plumed=2.9.2
+  - py-plumed=2.9.2

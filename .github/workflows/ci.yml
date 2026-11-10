@@ -1,0 +1,41 @@
+name: Linux CPU package checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cpu:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: mamba-org/setup-micromamba@v3
+        with:
+          environment-file: ci/environment.yml
+          cache-environment: true
+      - name: Install the CPU torch build and package dependencies
+        run: |
+          python -m pip install torch==2.12.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -c ci/constraints-linux.txt ".[test]" build
+          echo "PLUMED_KERNEL=$CONDA_PREFIX/lib/libplumedKernel.so" >> "$GITHUB_ENV"
+      - name: Build wheel and source distribution
+        run: python -m build
+      - name: Install the wheel and check it outside the checkout
+        run: |
+          python -m pip install --force-reinstall --no-deps dist/*.whl
+          mkdir -p "$RUNNER_TEMP/pb-checks"
+          cp tests/test_plumed_bias.py examples/minimal_example.py "$RUNNER_TEMP/pb-checks/"
+          cp -R benchmarks "$RUNNER_TEMP/pb-checks/benchmarks"
+          cd "$RUNNER_TEMP/pb-checks"
+          python -c 'import plumed_bias; print(plumed_bias.__file__); assert "site-packages" in plumed_bias.__file__'
+          python -m pytest -q test_plumed_bias.py
+          python minimal_example.py
+          python benchmarks/benchmark_bridge.py --walkers 1 2 --calls 10 --warmup 2 --repeats 1 --out smoke.json

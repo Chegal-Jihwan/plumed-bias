@@ -1,0 +1,9 @@
+include LICENSE README.md
+include CHANGELOG.md CONTRIBUTING.md CITATION.cff
+recursive-include docs *.md
+recursive-include examples *.py *.dat
+recursive-include benchmarks *.py *.md *.json *.svg
+recursive-include ci *.yml *.txt
+recursive-include .github *.yml
+recursive-include tests *.py
+global-exclude .DS_Store *.py[cod]

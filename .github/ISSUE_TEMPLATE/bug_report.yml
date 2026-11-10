@@ -1,0 +1,24 @@
+name: Bug report
+description: Report an installation or runtime problem
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include expected behavior and the complete traceback.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproducer
+      description: Provide the Python call and PLUMED input, and say how many systems are batched and whether they run in one process. Use a small synthetic structure if the original is private.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: plumed-bias version or commit, OS, Python, torch, torch-sim, PLUMED kernel and Python binding versions; CPU/GPU; installation commands.
+    validations:
+      required: true

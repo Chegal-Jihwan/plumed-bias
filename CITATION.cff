@@ -1,0 +1,251 @@
+cff-version: 1.2.0
+message: "If you use this software, cite it as below, and cite the entries under references that your run uses."
+title: "plumed-bias: a PLUMED bias for torch-sim models"
+type: software
+authors:
+  - family-names: Chegal
+    given-names: Jihwan
+    affiliation: "Computational & Data-driven Chemistry Lab, Kyung Hee University"
+    email: wlghks1294@khu.ac.kr
+version: 0.1.0
+date-released: 2026-11-10
+repository-code: "https://github.com/Chegal-Jihwan/plumed-bias"
+license: MIT
+references:
+  - type: article
+    title: "PLUMED 2: New feathers for an old bird"
+    authors:
+      - family-names: "Tribello"
+        given-names: "Gareth A."
+      - family-names: "Bonomi"
+        given-names: "Massimiliano"
+      - family-names: "Branduardi"
+        given-names: "Davide"
+      - family-names: "Camilloni"
+        given-names: "Carlo"
+      - family-names: "Bussi"
+        given-names: "Giovanni"
+    journal: "Computer Physics Communications"
+    volume: 185
+    start: 604
+    end: 613
+    year: 2014
+    doi: "10.1016/j.cpc.2013.09.018"
+  - type: article
+    title: "Promoting transparency and reproducibility in enhanced molecular simulations"
+    authors:
+      - name: "The PLUMED consortium"
+    journal: "Nature Methods"
+    volume: 16
+    start: 670
+    end: 673
+    year: 2019
+    doi: "10.1038/s41592-019-0506-8"
+  - type: article
+    title: "TorchSim: an efficient atomistic simulation engine in PyTorch"
+    authors:
+      - family-names: "Cohen"
+        given-names: "Orion"
+      - family-names: "Riebesell"
+        given-names: "Janosh"
+      - family-names: "Goodall"
+        given-names: "Rhys"
+      - family-names: "Kolluru"
+        given-names: "Adeesh"
+      - family-names: "Falletta"
+        given-names: "Stefano"
+      - family-names: "Krause"
+        given-names: "Joseph"
+      - family-names: "Colindres"
+        given-names: "Jorge"
+      - family-names: "Ceder"
+        given-names: "Gerbrand"
+      - family-names: "Gangan"
+        given-names: "Abhijeet S"
+    journal: "AI for Science"
+    volume: 1
+    start: "025003"
+    year: 2025
+    doi: "10.1088/3050-287X/ae1799"
+  - type: article
+    title: "The atomic simulation environment—a Python library for working with atoms"
+    authors:
+      - family-names: "Hjorth Larsen"
+        given-names: "Ask"
+      - family-names: "Mortensen"
+        given-names: "Jens Jørgen"
+      - family-names: "Blomqvist"
+        given-names: "Jakob"
+      - family-names: "Castelli"
+        given-names: "Ivano E"
+      - family-names: "Christensen"
+        given-names: "Rune"
+      - family-names: "Dułak"
+        given-names: "Marcin"
+      - family-names: "Friis"
+        given-names: "Jesper"
+      - family-names: "Groves"
+        given-names: "Michael N"
+      - family-names: "Hammer"
+        given-names: "Bjørk"
+      - family-names: "Hargus"
+        given-names: "Cory"
+      - family-names: "Hermes"
+        given-names: "Eric D"
+      - family-names: "Jennings"
+        given-names: "Paul C"
+      - family-names: "Jensen"
+        given-names: "Peter Bjerre"
+      - family-names: "Kermode"
+        given-names: "James"
+      - family-names: "Kitchin"
+        given-names: "John R"
+      - family-names: "Kolsbjerg"
+        given-names: "Esben Leonhard"
+      - family-names: "Kubal"
+        given-names: "Joseph"
+      - family-names: "Kaasbjerg"
+        given-names: "Kristen"
+      - family-names: "Lysgaard"
+        given-names: "Steen"
+      - family-names: "Maronsson"
+        given-names: "Jón Bergmann"
+      - family-names: "Maxson"
+        given-names: "Tristan"
+      - family-names: "Olsen"
+        given-names: "Thomas"
+      - family-names: "Pastewka"
+        given-names: "Lars"
+      - family-names: "Peterson"
+        given-names: "Andrew"
+      - family-names: "Rostgaard"
+        given-names: "Carsten"
+      - family-names: "Schiøtz"
+        given-names: "Jakob"
+      - family-names: "Schütt"
+        given-names: "Ole"
+      - family-names: "Strange"
+        given-names: "Mikkel"
+      - family-names: "Thygesen"
+        given-names: "Kristian S"
+      - family-names: "Vegge"
+        given-names: "Tejs"
+      - family-names: "Vilhelmsen"
+        given-names: "Lasse"
+      - family-names: "Walter"
+        given-names: "Michael"
+      - family-names: "Zeng"
+        given-names: "Zhenhua"
+      - family-names: "Jacobsen"
+        given-names: "Karsten W"
+    journal: "Journal of Physics: Condensed Matter"
+    volume: 29
+    start: "273002"
+    year: 2017
+    doi: "10.1088/1361-648X/aa680e"
+  - type: article
+    title: "Scalable Parallel Algorithm for Graph Neural Network Interatomic Potentials in Molecular Dynamics Simulations"
+    authors:
+      - family-names: "Park"
+        given-names: "Yutack"
+      - family-names: "Kim"
+        given-names: "Jaesun"
+      - family-names: "Hwang"
+        given-names: "Seungwoo"
+      - family-names: "Han"
+        given-names: "Seungwu"
+    journal: "Journal of Chemical Theory and Computation"
+    volume: 20
+    start: 4857
+    end: 4868
+    year: 2024
+    doi: "10.1021/acs.jctc.4c00190"
+  - type: article
+    title: "Optimizing cross-domain transfer for universal machine learning interatomic potentials"
+    authors:
+      - family-names: "Kim"
+        given-names: "Jaesun"
+      - family-names: "You"
+        given-names: "Jinmu"
+      - family-names: "Park"
+        given-names: "Yutack"
+      - family-names: "Lim"
+        given-names: "Yunsung"
+      - family-names: "Kang"
+        given-names: "Yujin"
+      - family-names: "Kim"
+        given-names: "Jisu"
+      - family-names: "Jeon"
+        given-names: "Haekwan"
+      - family-names: "Ju"
+        given-names: "Suyeon"
+      - family-names: "Hong"
+        given-names: "Deokgi"
+      - family-names: "Lee"
+        given-names: "Seung Yul"
+      - family-names: "Choi"
+        given-names: "Saerom"
+      - family-names: "Kim"
+        given-names: "Yongdeok"
+      - family-names: "Lee"
+        given-names: "Jae W."
+      - family-names: "Han"
+        given-names: "Seungwu"
+    journal: "Nature Communications"
+    volume: 17
+    start: "3432"
+    year: 2026
+    doi: "10.1038/s41467-026-70195-8"
+  - type: article
+    title: "Escaping free-energy minima"
+    authors:
+      - family-names: "Laio"
+        given-names: "Alessandro"
+      - family-names: "Parrinello"
+        given-names: "Michele"
+    journal: "Proceedings of the National Academy of Sciences"
+    volume: 99
+    start: 12562
+    end: 12566
+    year: 2002
+    doi: "10.1073/pnas.202427399"
+  - type: article
+    title: "Well-Tempered Metadynamics: A Smoothly Converging and Tunable Free-Energy Method"
+    authors:
+      - family-names: "Barducci"
+        given-names: "Alessandro"
+      - family-names: "Bussi"
+        given-names: "Giovanni"
+      - family-names: "Parrinello"
+        given-names: "Michele"
+    journal: "Physical Review Letters"
+    volume: 100
+    start: "020603"
+    year: 2008
+    doi: "10.1103/PhysRevLett.100.020603"
+  - type: article
+    title: "Rethinking Metadynamics: From Bias Potentials to Probability Distributions"
+    authors:
+      - family-names: "Invernizzi"
+        given-names: "Michele"
+      - family-names: "Parrinello"
+        given-names: "Michele"
+    journal: "The Journal of Physical Chemistry Letters"
+    volume: 11
+    start: 2731
+    end: 2736
+    year: 2020
+    doi: "10.1021/acs.jpclett.0c00497"
+  - type: article
+    title: "Exploration vs Convergence Speed in Adaptive-Bias Enhanced Sampling"
+    authors:
+      - family-names: "Invernizzi"
+        given-names: "Michele"
+      - family-names: "Parrinello"
+        given-names: "Michele"
+    journal: "Journal of Chemical Theory and Computation"
+    volume: 18
+    start: 3988
+    end: 3996
+    year: 2022
+    doi: "10.1021/acs.jctc.2c00152"

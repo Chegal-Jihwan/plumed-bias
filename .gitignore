@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.DS_Store
+build/
+dist/
+.venv/
+/sevennet_run/
+/water_run/
+/my_run/
+/bridge_benchmark.json
+/bridge_benchmark.svg

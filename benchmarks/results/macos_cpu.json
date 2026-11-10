@@ -1,0 +1,136 @@
+{
+  "workload": "fixed-position synthetic harmonic model, optional PLUMED distance restraint",
+  "settings": {
+    "device": "cpu",
+    "walkers": [
+      1,
+      4,
+      16
+    ],
+    "atoms": 6,
+    "calls": 200,
+    "warmup": 20,
+    "repeats": 3,
+    "out": "benchmarks/results/macos_cpu.json"
+  },
+  "environment": {
+    "python": "3.12.16",
+    "platform": "Darwin",
+    "machine": "arm64",
+    "device": "cpu",
+    "gpu": null,
+    "torch_threads": 1,
+    "plumed_kernel_version": "2.10.2",
+    "plumed_binding_version": null,
+    "versions": {
+      "torch": "2.15.0",
+      "torch-sim-atomistic": "0.6.2",
+      "ase": "3.29.0",
+      "numpy": "2.5.4"
+    }
+  },
+  "command": [
+    "benchmarks/benchmark_bridge.py",
+    "--device",
+    "cpu",
+    "--walkers",
+    "1",
+    "4",
+    "16",
+    "--calls",
+    "200",
+    "--warmup",
+    "20",
+    "--repeats",
+    "3",
+    "--out",
+    "benchmarks/results/macos_cpu.json"
+  ],
+  "results": [
+    {
+      "arm": "base",
+      "systems": 1,
+      "atoms_per_system": 6,
+      "ms_per_batch_call_mean": 0.010961596562992781,
+      "ms_per_batch_call_stdev": 0.000533877044296303,
+      "ms_per_system_call_mean": 0.010961596562992781,
+      "system_calls_per_s": 91227.58662511621,
+      "repeat_ms_per_batch_call": [
+        0.011177705018781126,
+        0.011353539885021746,
+        0.010353544785175472
+      ]
+    },
+    {
+      "arm": "plumed",
+      "systems": 1,
+      "atoms_per_system": 6,
+      "ms_per_batch_call_mean": 0.04674486156242589,
+      "ms_per_batch_call_stdev": 0.0007966207237960436,
+      "ms_per_system_call_mean": 0.04674486156242589,
+      "system_calls_per_s": 21392.72567241514,
+      "repeat_ms_per_batch_call": [
+        0.047403335047420114,
+        0.04585937480442226,
+        0.0469718748354353
+      ]
+    },
+    {
+      "arm": "base",
+      "systems": 4,
+      "atoms_per_system": 6,
+      "ms_per_batch_call_mean": 0.011258610077978423,
+      "ms_per_batch_call_stdev": 0.0003181027990518782,
+      "ms_per_system_call_mean": 0.0028146525194946057,
+      "system_calls_per_s": 355283.6426784072,
+      "repeat_ms_per_batch_call": [
+        0.011186875053681433,
+        0.010982500098180026,
+        0.011606455082073808
+      ]
+    },
+    {
+      "arm": "plumed",
+      "systems": 4,
+      "atoms_per_system": 6,
+      "ms_per_batch_call_mean": 0.08696624999477838,
+      "ms_per_batch_call_stdev": 0.002110763895718346,
+      "ms_per_system_call_mean": 0.021741562498694595,
+      "system_calls_per_s": 45994.85432843393,
+      "repeat_ms_per_batch_call": [
+        0.08503145509166643,
+        0.08665000001201406,
+        0.08921729488065466
+      ]
+    },
+    {
+      "arm": "base",
+      "systems": 16,
+      "atoms_per_system": 6,
+      "ms_per_batch_call_mean": 0.011532291634163508,
+      "ms_per_batch_call_stdev": 0.0002784059268598066,
+      "ms_per_system_call_mean": 0.0007207682271352193,
+      "system_calls_per_s": 1387408.5487572355,
+      "repeat_ms_per_batch_call": [
+        0.011240624880883843,
+        0.011795205064117908,
+        0.011561044957488775
+      ]
+    },
+    {
+      "arm": "plumed",
+      "systems": 16,
+      "atoms_per_system": 6,
+      "ms_per_batch_call_mean": 0.23026243162651858,
+      "ms_per_batch_call_stdev": 0.0028490191499511938,
+      "ms_per_system_call_mean": 0.014391401976657411,
+      "system_calls_per_s": 69485.93344984607,
+      "repeat_ms_per_batch_call": [
+        0.23274854494957253,
+        0.22715353989042342,
+        0.23088521003955975
+      ]
+    }
+  ],
+  "limits": "No MLIP, no integration, no METAD/OPES history, no sampling-efficiency claim. Base and PLUMED arms return different forces."
+}

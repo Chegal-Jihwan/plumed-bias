@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plumed-bias"
+version = "0.1.0"
+description = "A PLUMED bias for torch-sim models, with MD checkpoint helpers"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+authors = [{ name = "Jihwan Chegal", email = "wlghks1294@khu.ac.kr" }]
+dependencies = ["numpy", "torch", "ase", "torch-sim-atomistic>=0.6"]
+# The PLUMED kernel and its python module are not on this list: install them from conda-forge (see README).
+
+[project.urls]
+Repository = "https://github.com/Chegal-Jihwan/plumed-bias"
+Issues = "https://github.com/Chegal-Jihwan/plumed-bias/issues"
+Changelog = "https://github.com/Chegal-Jihwan/plumed-bias/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+test = ["pytest"]
+sevennet = ["sevenn==0.13.0"]
+benchmark = ["matplotlib"]
+
+[tool.setuptools]
+py-modules = ["plumed_bias"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

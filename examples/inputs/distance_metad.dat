@@ -1,0 +1,7 @@
+# Water integration demo. For a different structure, choose your own atom indices and CVs.
+# @OUT@, @WALKER@ and @TEMP@ are replaced by sevennet_md.py.
+UNITS LENGTH=A ENERGY=eV
+d: DISTANCE ATOMS=1,2 NOPBC
+rst: RESTRAINT ARG=d AT=0.97 KAPPA=1.0
+metad: METAD ARG=d SIGMA=0.05 HEIGHT=0.002 PACE=20 BIASFACTOR=8 TEMP=@TEMP@ FILE=@OUT@/HILLS.@WALKER@
+PRINT ARG=d,rst.bias,metad.bias STRIDE=10 FILE=@OUT@/COLVAR.@WALKER@
