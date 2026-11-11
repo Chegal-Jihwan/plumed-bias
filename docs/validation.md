@@ -1,6 +1,6 @@
 # Validation
 
-The packaged tests use a harmonic model and run on CPU. They check the force coupling, the METAD restart, FLUSH handling, input and checkpoint validation, and failure handling.
+The packaged tests use a harmonic model and run on CPU. They check the force coupling, the METAD and OPES restarts, FLUSH handling, input and checkpoint validation, and failure handling. The OPES restart test needs a PLUMED kernel with the opes module and does nothing without it; the conda-forge 2.9.2 kernels used on macOS and in CI do not have it.
 
 ```bash
 pytest
@@ -16,6 +16,13 @@ Version 0.1.0:
 |---|---|
 | macOS arm64 CPU: Python 3.12.16, torch 2.15.0, torch-sim 0.6.2, ASE 3.29.0, PLUMED kernel 2.10.2, binding 2.9.2 | All tests pass, also from the installed wheel outside the source tree. Minimal example: restart difference 0.0 Angstrom |
 | GitHub Actions ubuntu-24.04 CPU: Python 3.12, torch 2.12.1+cpu, torch-sim 0.6.0, PLUMED and binding 2.9.2 | Same, from the installed wheel. The extras test is skipped on torch-sim 0.6.0 |
+
+After 0.1.0 (unreleased changes of 2026-11-11):
+
+| Environment | Result |
+|---|---|
+| Linux CPU: Python 3.12.13, torch 2.12.1, torch-sim 0.6.0, PLUMED 2.9.2 built with all modules | All tests pass, including the OPES restart test. Minimal example: restart difference 0.0 Angstrom |
+| macOS arm64 CPU: Python 3.12, torch 2.15.0, torch-sim 0.6.2, PLUMED and binding 2.9.2 | All tests pass (the OPES restart test has no opes module to run on). One wrapper call with the model and state on MPS returns finite energies and forces |
 
 Before the 0.1.0 fixes, an earlier revision also ran on Linux CPU with torch 2.12.1 (CPU and CUDA builds), torch-sim 0.6.0 and PLUMED 2.9.2. There the SevenNet 0.13.0 example ran 40 steps for two water replicas and deposited two METAD hills per system.
 
@@ -37,7 +44,7 @@ A 20 ps straight run saved MD state/RNG and an OPES STATE snapshot at 10 ps. Sep
 
 End-point position differences were 0.0201 Angstrom for restart versus straight (10 ps after the checkpoint) and 2.274 Angstrom for repeat versus straight (20 ps). No acceptance limit was set for these.
 
-[Case and results](../benchmarks/results/butane_opes_restart.json) and [reproduction harness](../benchmarks/validate_butane.py) are included. Harness requirements are listed in [usage](usage.md#recorded-opes-restart-case). The run used the packaged harness with an earlier `resume_bias`, which did not replay the checkpoint step, so the first resumed step missed one OPES variance update. It has not been re-run with 0.1.0.
+[Case and results](../benchmarks/results/butane_opes_restart.json) and [reproduction harness](../benchmarks/validate_butane.py) are included. Harness requirements are listed in [usage](usage.md#recorded-opes-restart-case). The run used the packaged harness with an earlier `resume_bias`, which did not replay the checkpoint step, so the first resumed step missed one OPES variance update. It has not been re-run with 0.1.0. The current `resume_bias` is covered by `test_opes_restart_matches_straight_run` on CPU instead.
 
 ## What each test checks
 
@@ -63,6 +70,8 @@ End-point position differences were 0.0201 Angstrom for restart versus straight 
 | `test_malformed_model_output_and_checkpoint_are_rejected` | bad model output shapes, unloadable `extra`, a different dtype and corrupted checkpoints are refused; the previous checkpoint survives a failed save |
 | `test_base_model_stress_is_not_passed_on` | a `stress` returned by the base model is not in the wrapper output |
 | `test_non_finite_state_and_outputs_are_refused` | NaN states are not saved; NaN model output raises without advancing the step and blocks the next save; a NaN PLUMED bias finalizes the wrapper |
+| `test_plumed_error_in_direct_bias_call_blocks_checkpoint` | an error raised by PLUMED for a later system in a direct `bias` call sets `failed`, and `save_checkpoint` refuses the state |
+| `test_opes_restart_matches_straight_run` | OPES_METAD and OPES_METAD_EXPLORE, fixed and adaptive SIGMA: 120 steps straight equal 40 steps, checkpoint, new objects with the STATE snapshot, 80 more steps (does nothing without the opes module) |
 | `test_state_extras_survive_restart` | system and atom extras of the torch-sim state survive save and load, and a NaN extra is not saved (skipped on torch-sim without extras) |
 
 The restart tests need torch-sim >= 0.6. On GPU, repeated runs diverge numerically (2.274 Angstrom between two straight 20 ps runs, above); the CPU restart difference of 0.0 does not apply there.
@@ -70,11 +79,14 @@ The restart tests need torch-sim >= 0.6. On GPU, repeated runs diverge numerical
 ## Not tested
 
 - Free energies, rates, model accuracy, sampling efficiency or convergence.
-- Full MD restart with OPES_METAD (non-EXPLORE), and with constrained states.
+- Full MD restart with constrained states.
+- OPES restart on GPU with the current `resume_bias`.
 - A bias shared between batch systems.
 - Model and version combinations other than those listed above.
 
-End-to-end restart has been run for METAD on CPU and for OPES_METAD_EXPLORE on CUDA.
+End-to-end restart has been run on CPU for METAD, OPES_METAD and OPES_METAD_EXPLORE, and on CUDA for OPES_METAD_EXPLORE with the earlier `resume_bias`.
+
+In the CPU OPES test all four cases give a position difference of 0.0 Angstrom. As a control, the same test without the replay step in `resume_bias` gives 0.0 for fixed SIGMA (the step after the checkpoint is not a deposition step) and 2.1e-3 to 2.3e-3 Angstrom for adaptive SIGMA.
 
 ## PLUMED details
 

@@ -31,7 +31,7 @@ finally:
 
 Finalized objects cannot be reused. A finalized wrapper can still be passed to `save_checkpoint`.
 
-If the base model returns NaN or inf, the wrapper raises `FloatingPointError` and the step is not advanced. If PLUMED returns a non-finite bias, for example for a DISTANCE between overlapping atoms, the wrapper raises and finalizes itself, and the HILLS or STATE file may contain that step.
+If PLUMED raises during a call, including a direct `pb.bias(x)`, the instances of earlier systems have already taken that step: the wrapper sets `pb.failed` and needs to be replaced. If the base model returns NaN or inf, the wrapper raises `FloatingPointError` and the step is not advanced. If PLUMED returns a non-finite bias, for example for a DISTANCE between overlapping atoms, the wrapper raises and finalizes itself, and the HILLS or STATE file may contain that step.
 
 The integrator updates the state in place, so after any exception from a wrapper call the state is usually half a step along. The wrapper sets `pb.failed`, and `save_checkpoint(path, state, pb)` refuses that state. Restart from the last checkpoint and its file copies.
 
@@ -51,6 +51,8 @@ The MD checkpoint and PLUMED history must describe the same completed step.
 A new PLUMED METAD or OPES instance skips the history update on its first call. `resume_bias` spends that call on the last completed step, using the checkpoint positions, so the next step updates as in an uninterrupted run whether or not it is a deposition step. If the checkpoint step is a PRINT step, its line is written again to the new output files.
 
 The HILLS or STATE file carries the deposited history, not every internal estimator. METAD with `ADAPTIVE=DIFF` keeps a running CV-fluctuation estimate outside the HILLS file, and the restarted run deposits hills with different widths. Exact restart is tested for fixed-width METAD; the adaptive-width difference is recorded in [validation](validation.md#plumed-details).
+
+Exact restart is also tested for OPES_METAD and OPES_METAD_EXPLORE with fixed and adaptive SIGMA, on a kernel that has the opes module.
 
 The CPU [complete example](../examples/minimal_example.py) implements this sequence and compares the continued trajectory with an uninterrupted one.
 

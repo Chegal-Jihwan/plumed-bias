@@ -158,7 +158,8 @@ class PlumedBias(torch.nn.Module):
 
         x: [N, 3] positions in A, all systems stacked.
         Returns (bias forces [N, 3] in eV/A, bias energies [n_systems] in eV). A non-finite result (for example a
-        DISTANCE between overlapping atoms) finalizes the wrapper and raises FloatingPointError.
+        DISTANCE between overlapping atoms) finalizes the wrapper and raises FloatingPointError. Any error raised
+        by PLUMED sets `self.failed`.
         """
         if not self._plumed:
             raise RuntimeError("PlumedBias was finalized")
@@ -167,20 +168,24 @@ class PlumedBias(torch.nn.Module):
             raise ValueError("positions must be finite with shape (total atoms from atoms_list, 3)")
         fb, vb = np.zeros_like(x), np.zeros(len(self._plumed))
         self._called = True
-        for b, p in enumerate(self._plumed):
-            pos = np.ascontiguousarray(x[self._offsets[b]:self._offsets[b + 1]])
-            f = np.zeros_like(pos)
-            vir = np.zeros((3, 3))
-            e = np.zeros(1)
-            p.cmd("setStep", self.step)
-            p.cmd("setMasses", self._masses[b])
-            p.cmd("setPositions", pos)
-            p.cmd("setForces", f)
-            p.cmd("setVirial", vir)
-            p.cmd("calc")
-            p.cmd("getBias", e)
-            fb[self._offsets[b]:self._offsets[b + 1]] = f
-            vb[b] = e[0]
+        try:
+            for b, p in enumerate(self._plumed):
+                pos = np.ascontiguousarray(x[self._offsets[b]:self._offsets[b + 1]])
+                f = np.zeros_like(pos)
+                vir = np.zeros((3, 3))
+                e = np.zeros(1)
+                p.cmd("setStep", self.step)
+                p.cmd("setMasses", self._masses[b])
+                p.cmd("setPositions", pos)
+                p.cmd("setForces", f)
+                p.cmd("setVirial", vir)
+                p.cmd("calc")
+                p.cmd("getBias", e)
+                fb[self._offsets[b]:self._offsets[b + 1]] = f
+                vb[b] = e[0]
+        except BaseException:
+            self.failed = True    # earlier systems have already taken this step
+            raise
         if not (np.isfinite(fb).all() and np.isfinite(vb).all()):
             self.failed = True
             self.finalize()    # the instances have already taken this step: the wrapper cannot continue
@@ -211,7 +216,7 @@ class PlumedBias(torch.nn.Module):
             raise ValueError(f"base model must return energy [{n_sys}] and forces [{self._offsets[-1]}, 3]")
         if not (torch.isfinite(res["energy"]).all() and torch.isfinite(res["forces"]).all()):
             raise FloatingPointError("base model returned non-finite energy or forces; the bias was not advanced")
-        x = state.positions.detach().to(torch.float64).cpu().numpy()
+        x = state.positions.detach().cpu().to(torch.float64).numpy()    # CPU first: MPS has no float64
         t2 = self._tick()
         fb, vb = self.bias(x)
         t3 = self._tick()
@@ -281,7 +286,10 @@ def save_checkpoint(path, state, bias=None, extra=None):
     _check_tensors(ck, ck["n_atoms"], int(state.system_idx.max()) + 1)
     tmp = os.fspath(path) + ".tmp"
     try:
-        torch.save(ck, tmp)
+        with open(tmp, "wb") as fh:
+            torch.save(ck, fh)
+            fh.flush()
+            os.fsync(fh.fileno())             # on disk before the rename replaces the previous checkpoint
         torch.load(tmp, weights_only=True)    # fail here, not at load time, on an unreadable `extra`
     except BaseException:
         if os.path.exists(tmp):
@@ -310,7 +318,7 @@ def load_checkpoint(path, atoms_list, device="cpu", dtype=None):
         raise ValueError(f"checkpoint holds {ck['n_atoms']} atoms, atoms_list has {st.positions.shape[0]}")
     for kind in ("system_extras", "atom_extras"):
         ck.setdefault(kind, {})
-        if ck[kind] and not hasattr(st, "_" + kind):
+        if ck[kind] and not hasattr(st, kind):
             raise ValueError(f"checkpoint holds {kind}, which this torch-sim version does not support")
     _check_tensors(ck, st.positions.shape[0], len(atoms_list))
     for k in ("atomic_numbers", "masses", "system_idx", "pbc", "cell"):
@@ -329,7 +337,7 @@ def load_checkpoint(path, atoms_list, device="cpu", dtype=None):
     like = st.positions
     for kind in ("system_extras", "atom_extras"):
         for k, v in ck[kind].items():
-            getattr(st, "_" + kind)[k] = v.to(like.device)
+            getattr(st, kind)[k] = v.to(like.device)
     state = MDState.from_state(st, momenta=ck["momenta"].to(like), energy=ck["energy"].to(like),
                                forces=ck["forces"].to(like))
     g = torch.Generator(device=state.positions.device)

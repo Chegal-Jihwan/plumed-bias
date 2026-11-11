@@ -510,20 +510,95 @@ def test_state_extras_survive_restart():
         pb = make_pb(d)
         try:
             st = advance(new_state(pb), pb, 0, 3)
-            if not hasattr(st, "_system_extras"):
+            if not hasattr(st, "system_extras"):
                 print("  torch-sim without state extras: nothing to check")
                 return
-            st._system_extras["charge"] = torch.tensor([0.0, -1.0])
-            st._atom_extras["tag"] = torch.arange(12.0)
+            st.system_extras["charge"] = torch.tensor([0.0, -1.0])
+            st.atom_extras["tag"] = torch.arange(12.0)
             save_checkpoint(d / "ck.pt", st, pb)
             st2, _ = load_checkpoint(d / "ck.pt", ATOMS)
             assert torch.equal(st2.system_extras["charge"], st.system_extras["charge"])
             assert torch.equal(st2.atom_extras["tag"], st.atom_extras["tag"])
-            st._system_extras["charge"] = torch.tensor([0.0, np.nan])
+            st.system_extras["charge"] = torch.tensor([0.0, np.nan])
             with T.assertRaisesRegex(ValueError, "charge"):
                 save_checkpoint(d / "ck.pt", st, pb)
         finally:
             pb.finalize()
+
+def test_plumed_error_in_direct_bias_call_blocks_checkpoint():
+    class Broken:
+        def cmd(self, *a):
+            raise RuntimeError("PLUMED error")
+
+        def finalize(self):
+            pass
+
+    with tmpdir() as d:
+        pb = make_pb(d)
+        try:
+            st = advance(new_state(pb), pb, 0, 3)
+            good = pb._plumed[1]
+            pb._plumed[1] = Broken()                                    # system 0 takes the step, system 1 raises
+            with T.assertRaisesRegex(RuntimeError, "PLUMED error"):
+                pb.bias(np.concatenate([a.positions for a in ATOMS]))
+            pb._plumed[1] = good
+            assert pb.failed
+            with T.assertRaisesRegex(ValueError, "mid-step"):
+                save_checkpoint(d / "ck.pt", st, pb)
+        finally:
+            pb.finalize()
+
+
+def opes_text(d, b, action, sigma, restart=None):
+    flag = "" if restart is None else f" RESTART=YES STATE_RFILE={restart}"
+    return "\n".join(["UNITS LENGTH=A ENERGY=eV",
+                      "d: DISTANCE ATOMS=1,2 NOPBC",
+                      f"o: {action} ARG=d PACE=10 BARRIER=0.3 SIGMA={sigma} TEMP=300 FILE={d}/KERNELS.{b} "
+                      f"STATE_WFILE={d}/STATE.{b} STATE_WSTRIDE=10{flag}",
+                      f"PRINT ARG=d,o.bias STRIDE=10 FMT=%.17g FILE={d}/COLVAR.{b}"]) + "\n"
+
+
+def opes_pb(d, action, sigma, restart=None):
+    d.mkdir(exist_ok=True)
+    ref = np.concatenate([a.get_positions() for a in ATOMS])
+    texts = [opes_text(d, b, action, sigma, None if restart is None else restart[b]) for b in range(2)]
+    return PlumedBias(HarmonicToy(ref), ATOMS, texts, 1.0, KT, d, flush_stride=10)
+
+
+def opes_restart_gap(d, action, sigma, ck=40, n=120):
+    pb = opes_pb(d / "a", action, sigma)
+    st = advance(new_state(pb), pb, 0, ck)
+    save_checkpoint(d / "ck.pt", st, pb)
+    (d / "b").mkdir()
+    files = [shutil.copy(d / "a" / f"STATE.{b}", d / "b" / f"STATE.{b}.restart") for b in range(2)]
+    x_ck = st.positions.clone()
+    x_end = advance(st, pb, ck, n).positions.clone()
+    pb.finalize()
+    pb2 = opes_pb(d / "b", action, sigma, files)
+    st2, info = load_checkpoint(d / "ck.pt", ATOMS)
+    resume_bias(pb2, info)
+    y_end = advance(st2, pb2, ck, n).positions.clone()
+    pb2.finalize()
+    return float((x_end - y_end).abs().max()), float((x_end - x_ck).abs().max())
+
+
+def test_opes_restart_matches_straight_run():
+    """OPES_METAD and OPES_METAD_EXPLORE, fixed and adaptive SIGMA: 120 steps straight against a restart from the
+    step-40 checkpoint and STATE snapshot. Needs a PLUMED kernel with the opes module."""
+    with tmpdir() as d:
+        try:
+            opes_pb(d / "probe", "OPES_METAD", "0.1").finalize()
+        except Exception as err:
+            if "OPES_METAD" not in str(err):
+                raise
+            print("  PLUMED kernel without the opes module: nothing to check")
+            return
+    for action in ("OPES_METAD", "OPES_METAD_EXPLORE"):
+        for sigma in ("0.1", "ADAPTIVE ADAPTIVE_SIGMA_STRIDE=20"):
+            with tmpdir() as d:
+                gap, moved = opes_restart_gap(d, action, sigma)
+                print(f"  {action} SIGMA={sigma.split()[0]}: max |dx| {gap:.3e} A (positions moved by {moved:.3f} A)")
+                assert gap < 1e-5, (action, sigma, gap)
 
 
 if __name__ == "__main__":

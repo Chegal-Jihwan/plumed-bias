@@ -1,5 +1,13 @@
 # Changes
 
+## Unreleased
+
+- Positions are moved to the CPU before the float64 conversion, so a model on MPS works.
+- An error raised by PLUMED in a direct `bias()` call sets `failed`, as it already did through the model call.
+- `save_checkpoint` syncs the temporary file to disk before it replaces the previous checkpoint.
+- State extras are read and written through torch-sim's public `system_extras` / `atom_extras`.
+- New tests: OPES_METAD and OPES_METAD_EXPLORE restart (needs the opes module), PLUMED error in a direct `bias()` call.
+
 ## 0.1.0 (2026-11-10)
 
 Initial release.
