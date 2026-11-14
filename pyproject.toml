@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "plumed-bias"
 version = "0.1.0"
-description = "A PLUMED bias for torch-sim models, with MD checkpoint helpers"
+description = "PLUMED integration for torch-sim: independent MetaD/OPES biases, batched molecular dynamics, and checkpoint/restart for non-periodic systems."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
