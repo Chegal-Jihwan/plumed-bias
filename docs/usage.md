@@ -1,4 +1,4 @@
-# Using the wrapper
+# Using plumed-bias with torch-sim
 
 ## Model and state contract
 
@@ -39,7 +39,7 @@ The wrapper has no bias virial: it declares `compute_stress=False` and drops any
 
 ## Restart: two parts
 
-The MD checkpoint and PLUMED history must describe the same completed step.
+Restarting a metadynamics or OPES run needs the MD checkpoint and the PLUMED history, and both must describe the same completed step.
 
 1. Use `flush_stride` (usually METAD PACE) and save at a matching flush step. For OPES, configure `STATE_WFILE` and an appropriate `STATE_WSTRIDE`; flushing print buffers does not create a missing OPES state snapshot.
 2. Call `save_checkpoint(path, state, pb)` and copy the HILLS or STATE file for that checkpoint. Keep this snapshot separate from a history that will continue growing.
@@ -73,7 +73,7 @@ pytest does not run it. The harness stops after the smoke run if the projected t
 
 ## SevenNet example
 
-Install the optional adapter dependencies into a suitable torch environment:
+This example runs enhanced sampling with a machine-learning interatomic potential. Install the optional adapter dependencies into a suitable torch environment:
 
 ```bash
 python -m pip install -e ".[sevennet]"

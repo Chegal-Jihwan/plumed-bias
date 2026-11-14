@@ -1,42 +1,56 @@
-# plumed-bias
+# plumed-bias — Metadynamics and OPES for torch-sim
 
 [![CI](https://github.com/Chegal-Jihwan/plumed-bias/actions/workflows/ci.yml/badge.svg)](https://github.com/Chegal-Jihwan/plumed-bias/actions/workflows/ci.yml)
 
-Connect a [torch-sim](https://github.com/TorchSim/torch-sim) model to [PLUMED](https://www.plumed.org/) for biased molecular dynamics of independent, non-periodic systems.
+plumed-bias connects [PLUMED](https://www.plumed.org/) to [torch-sim](https://github.com/TorchSim/torch-sim) for enhanced-sampling molecular dynamics. It runs batched simulations of independent, non-periodic systems, each with its own PLUMED bias instance and history.
 
-`PlumedBias` adds PLUMED's bias energy and forces to the base model output. Your torch-sim integrator stays in charge of the MD. Each system in a batch gets its own PLUMED instance and history. The package also includes MD checkpoint helpers.
+Metadynamics (MetaD), well-tempered metadynamics and OPES are available through the PLUMED kernel you install; OPES needs a kernel built with the opes module. `PlumedBias` adds PLUMED's bias energy and forces to the output of the base model, which can be a machine-learning interatomic potential, and the torch-sim integrator stays in charge of the MD.
 
-Version 0.1.0 (2026-11-10). Tested on macOS arm64 and Linux CPU; the versions are listed in [validation](docs/validation.md#recorded-runs).
+Version 0.1.0 (2026-11-10). Tested on macOS arm64 and Linux CPU; the versions are listed in [validation](docs/validation.md#recorded-runs). plumed-bias is a separate project, not part of PLUMED or torch-sim.
 
-## Scope
+## Key features
+
+- Independent PLUMED biases across the systems of a batch
+- Works with any torch-sim model, including machine-learning interatomic potentials
+- MD checkpoint and restart, paired with PLUMED HILLS or OPES STATE snapshots
+- NVE and Langevin NVT integration
+- CPU examples, and a recorded CUDA validation on one GPU setup
+
+## Scope and limitations
 
 - Non-periodic systems with a fixed atom layout.
 - Checkpoint and restart of unconstrained NVE and Langevin NVT runs.
 - Not supported: periodic boundaries, bias stress, NPT, a bias shared between batch systems.
+- GPU runs are recorded for one CUDA setup only (see [validation](docs/validation.md#n-butane-cuda--opes-restart-2026-11-07)).
 
-## Installation
-
-PLUMED and its Python binding come from conda-forge. Install torch first (CPU, or the CUDA build from [pytorch.org](https://pytorch.org/)), then the package from a source checkout:
+## Quick start
 
 ```bash
+git clone https://github.com/Chegal-Jihwan/plumed-bias.git
+cd plumed-bias
 conda create -n plumed-bias -c conda-forge python=3.12 plumed py-plumed
 conda activate plumed-bias
-python -m pip install torch   # or the CUDA build for your system
+python -m pip install torch
 python -m pip install -e ".[test]"
-export PLUMED_KERNEL="$CONDA_PREFIX/lib/libplumedKernel.so"
-# macOS kernel path: $CONDA_PREFIX/lib/libplumedKernel.dylib
-
+export PLUMED_KERNEL="$CONDA_PREFIX/lib/libplumedKernel.so"   # macOS: libplumedKernel.dylib
 python examples/minimal_example.py
-pytest
 ```
-
-Python 3.12 or newer is required. On macOS, read the [platform notes](docs/usage.md#platform-notes) about the OpenMP runtime first.
 
 The example runs two systems with a small harmonic model, saves at step 200, restarts and continues to step 400. It then prints the largest position difference from an uninterrupted run:
 
 ```text
 max |difference| (A): 0.0
 ```
+
+## Installation
+
+PLUMED and its Python binding come from conda-forge, as in the quick start. Install torch before the package: the CPU build, or the CUDA build for your system from [pytorch.org](https://pytorch.org/). Then run the tests from the source checkout:
+
+```bash
+pytest
+```
+
+Python 3.12 or newer is required. `PLUMED_KERNEL` must point to the kernel library of the intended PLUMED installation. On macOS, read the [platform notes](docs/usage.md#platform-notes) about the OpenMP runtime first. For OPES, use a PLUMED kernel built with the opes module; the conda-forge 2.9.2 kernel does not include it.
 
 ## Usage
 
@@ -61,15 +75,18 @@ Restarting needs the MD checkpoint (`save_checkpoint`, `load_checkpoint`, `resum
 ## Examples
 
 - [Minimal example](examples/minimal_example.py): CPU run with a checkpoint and restart.
-- [SevenNet example](examples/sevennet_md.py) and its [walkthrough](docs/usage.md#sevennet-example).
-- [Overhead benchmark](benchmarks/README.md) for the bridge itself.
-- [Validation](docs/validation.md): recorded runs, including a CUDA OPES restart of n-butane.
+- [SevenNet example](examples/sevennet_md.py): metadynamics with a machine-learning interatomic potential, with a [walkthrough](docs/usage.md#sevennet-example).
+
+## Validation and benchmarks
+
+- [Validation](docs/validation.md): what the tests check, recorded environments, and a CUDA OPES restart of n-butane run with an earlier `resume_bias`.
+- [Overhead benchmark](benchmarks/README.md): cost of the bridge itself, with a recorded macOS CPU run.
 
 ## Development
 
-See [CONTRIBUTING](CONTRIBUTING.md) and the [changelog](CHANGELOG.md). Citation metadata is in [CITATION.cff](CITATION.cff).
+See [CONTRIBUTING](CONTRIBUTING.md) and the [changelog](CHANGELOG.md).
 
-## References
+## Citation
 
 Cite the software and methods your run uses. Entries are also in [CITATION.cff](CITATION.cff).
 
@@ -87,10 +104,10 @@ Methods used in the examples and checks:
 - OPES: M. Invernizzi, M. Parrinello, J. Phys. Chem. Lett. 11, 2731 (2020), [doi:10.1021/acs.jpclett.0c00497](https://doi.org/10.1021/acs.jpclett.0c00497)
 - OPES explore: M. Invernizzi, M. Parrinello, J. Chem. Theory Comput. 18, 3988 (2022), [doi:10.1021/acs.jctc.2c00152](https://doi.org/10.1021/acs.jctc.2c00152)
 
-## Author
-
-Jihwan Chegal (wlghks1294@khu.ac.kr), Computational & Data-driven Chemistry Lab, Kyung Hee University.
-
 ## License and dependencies
 
 MIT, see [LICENSE](LICENSE). Dependencies (numpy, torch, ASE, torch-sim, PLUMED) and model checkpoints keep their own licenses and are not bundled. The optional SevenNet example requires SevenNet and its dependencies.
+
+## Author
+
+Jihwan Chegal (wlghks1294@khu.ac.kr), Computational & Data-driven Chemistry Lab, Kyung Hee University.
